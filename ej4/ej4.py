@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 def conseguirInput():
 	global N
