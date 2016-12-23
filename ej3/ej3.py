@@ -9,11 +9,10 @@ enemies_count = 0
 historical_points = []
 enemies_points = []
 
-#_points_inside_triangle = defaultdict(lambda : defaultdict(dict))
 _points_inside_triangle = dict()
 
-#def points_inside_triangle(a,b,c):
-#	return _points_inside_triangle[_a][_b][_c]
+_calculated_best_polygon_for_first_triangle = dict()
+_best_polygon_for_first_triangle = dict()
 
 def parse_input():
 	"""
@@ -24,9 +23,11 @@ def parse_input():
 	for h in range(historical_count):
 		x,y = map(int,raw_input().split())
 		historical_points.append(Point(x,y))
+	historical_points.sort()
 	for e in range(enemies_count):
 		x,y = map(int,raw_input().split())
 		enemies_points.append(Point(x,y))
+	enemies_points.sort()
 
 def precalculate_triangles():
 	for p1 in historical_points:
@@ -49,7 +50,8 @@ def precalculate_triangles():
 									total += 1
 					
 					_points_inside_triangle[t] = total
-	print _points_inside_triangle
+
+					_calculated_best_polygon_for_first_triangle[t] = False
 
 def print_output():
 	print historical_count,enemies_count
@@ -60,7 +62,31 @@ def print_output():
 def main():
 	parse_input()
 	precalculate_triangles()
+	best_polygon = 0
+	for pivot in historical_points:
+		polygon = best_polygon_for_pivot(pivot)
+		best_polygon = polygon if polygon>best_polygon else best_polygon
 	#print_output()
+
+def best_polygon_for_pivot(p1):
+	best = 0
+	for p2 in historical_points:
+		for p3 in historical_points:
+			if p1<p2 and p2<p3:
+				t = Triangle(p1,p2,p3)
+				b = best_polygon_for_first_triangle(t)
+				best = b if b > best else best
+
+def best_polygon_for_first_triangle(t):
+	if _calculated_best_polygon_for_first_triangle[t]:
+		return _best_polygon_for_first_triangle[t]
+	if _points_inside_triangle == -1:
+		_best_polygon_for_first_triangle[t] = -1
+		_calculated_best_polygon_for_first_triangle[t] = True
+		return _best_polygon_for_first_triangle[t]
+	p2,p3 = t.p2,t.p3
+	# Recorro todos los puntos a la derecha de estos puntos, que puedan formar triàngulos con los dos puntos de màs a la derecha de este triàngulo
+
 
 class Point:
 	""" Point class represents and manipulates x,y coords. """
@@ -88,9 +114,11 @@ class Triangle:
 
 	def __init__(self,p1,p2,p3):
 		""" Create a new triangle instance """
-		self.p1 = p1
-		self.p2 = p2
-		self.p3 = p3
+		points = list(p1,p2,p3)
+		points.sort()
+		self.p1 = points[0]
+		self.p1 = points[1]
+		self.p1 = points[2]
 
 	def __repr__(self):
 		return "Triangle({0},{1},{2})".format(self.p1,self.p2,self.p3)
