@@ -76,6 +76,7 @@ def best_polygon_for_pivot(p1):
 				t = Triangle(p1,p2,p3)
 				b = best_polygon_for_first_triangle(t)
 				best = b if b > best else best
+	return best
 
 def best_polygon_for_first_triangle(t):
 	if _calculated_best_polygon_for_first_triangle[t]:
@@ -85,9 +86,8 @@ def best_polygon_for_first_triangle(t):
 		_calculated_best_polygon_for_first_triangle[t] = True
 		return _best_polygon_for_first_triangle[t]
 	p2,p3 = t.p2,t.p3
-	# Recorro todos los puntos a la derecha de estos puntos, que puedan formar triàngulos con los dos puntos de màs a la derecha de este triàngulo
-
-
+	# Recorro todos los puntos a la derecha de estos puntos, 
+	# que puedan formar triàngulos con los dos puntos de màs a la derecha de este triàngulo
 class Point:
 	""" Point class represents and manipulates x,y coords. """
 
@@ -114,11 +114,11 @@ class Triangle:
 
 	def __init__(self,p1,p2,p3):
 		""" Create a new triangle instance """
-		points = list(p1,p2,p3)
+		points = [p1,p2,p3]
 		points.sort()
 		self.p1 = points[0]
-		self.p1 = points[1]
-		self.p1 = points[2]
+		self.p2 = points[1]
+		self.p3 = points[2]
 
 	def __repr__(self):
 		return "Triangle({0},{1},{2})".format(self.p1,self.p2,self.p3)
