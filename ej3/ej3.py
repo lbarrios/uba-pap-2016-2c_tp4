@@ -30,19 +30,21 @@ def parse_input():
 	enemies_points.sort()
 
 def precalculate_triangles():
+	global _calculated_best_polygon_for_first_triangle
 	for p1 in historical_points:
 		for p2 in historical_points:
 			for p3 in historical_points:
 				# check if the triangle is valid
 				if p1<p2 and p2<p3:
 					t = Triangle(p1,p2,p3)
-					
-					# if triangle cointains an enemy, it is not valid
 					total = 0
+
+					# if triangle cointains an enemy, it is not valid
 					for p in enemies_points:
 						if p in t:
 							total = -1
 					
+					# if triangle does not contains an enemy, calculates the historical points count
 					if total != -1:
 						for p in historical_points:
 							if p != p1 and p != p2 and p != p3:
@@ -50,7 +52,6 @@ def precalculate_triangles():
 									total += 1
 					
 					_points_inside_triangle[t] = total
-
 					_calculated_best_polygon_for_first_triangle[t] = False
 
 def print_output():
@@ -58,15 +59,6 @@ def print_output():
 	print historical_points
 	print enemies_points
 	pass
-
-def main():
-	parse_input()
-	precalculate_triangles()
-	best_polygon = 0
-	for pivot in historical_points:
-		polygon = best_polygon_for_pivot(pivot)
-		best_polygon = polygon if polygon>best_polygon else best_polygon
-	#print_output()
 
 def best_polygon_for_pivot(p1):
 	best = 0
@@ -88,6 +80,7 @@ def best_polygon_for_first_triangle(t):
 	p2,p3 = t.p2,t.p3
 	# Recorro todos los puntos a la derecha de estos puntos, 
 	# que puedan formar triàngulos con los dos puntos de màs a la derecha de este triàngulo
+
 class Point:
 	""" Point class represents and manipulates x,y coords. """
 
@@ -98,6 +91,9 @@ class Point:
 
 	def __repr__(self):
 		return "Point({0},{1})".format(self.x,self.y)
+
+	def __hash__(self):
+		return hash((self.x,self.y))
 
 	def __lt__(self, point2):
 		if self.x < point2.x:
@@ -112,6 +108,9 @@ class Point:
 class Triangle:
 	""" Triangle class represents and manipulates 3 points figure. """
 
+	#def __hash__(self):
+	#	return hash("({0},{1},{2})".format(self.p1, self.p2, self.p3))
+
 	def __init__(self,p1,p2,p3):
 		""" Create a new triangle instance """
 		points = [p1,p2,p3]
@@ -122,6 +121,12 @@ class Triangle:
 
 	def __repr__(self):
 		return "Triangle({0},{1},{2})".format(self.p1,self.p2,self.p3)
+
+	def __hash__(self):
+		return hash((self.p1,self.p2,self.p3))
+
+	def __eq__(self, t2):
+		return self.p1==t2.p1 and self.p2==t2.p2 and self.p3==t2.p3 
 
 	def __contains__(self, p):
 		if isinstance(p, Point):
@@ -140,6 +145,14 @@ class Triangle:
 		a3 = self.p3.x * (self.p1.y - self.p2.y)
 		return abs(a1+a2+a3)
 
+def main():
+	parse_input()
+	precalculate_triangles()
+	best_polygon = 2 # the minimum best polygon is a triangle with two points inside
+	for pivot in historical_points:
+		actual_polygon = best_polygon_for_pivot(pivot)
+		best_polygon = actual_polygon if (actual_polygon>best_polygon) else best_polygon
+	#print_output()
 
 if __name__ == '__main__':
 	main()
