@@ -30,38 +30,44 @@ def parse_input():
 	enemies_points.sort()
 
 def precalculate_triangles():
-	global _calculated_best_polygon_for_first_triangle
+	# print "Precalculating triangles..." # DEBUG
+	global _calculated_best_polygon_for_first_triangle, _points_inside_triangle
 	for p1 in historical_points:
 		for p2 in historical_points:
 			for p3 in historical_points:
 				# check if the triangle is valid
 				if p1<p2 and p2<p3:
 					t = Triangle(p1,p2,p3)
+					# print "checking triangle %s"%t # DEBUG
 					total = 0
 
 					# if triangle cointains an enemy, it is not valid
 					for p in enemies_points:
 						if p in t:
 							total = -1
+							# print "\t triangle has enemies points" # DEBUG
 					
 					# if triangle does not contains an enemy, calculates the historical points count
 					if total != -1:
+						# print "\t checking historical points" # DEBUG
 						for p in historical_points:
 							if p != p1 and p != p2 and p != p3:
 								if p in t:
 									total += 1
+						# print "\t historical points = %s"%total # DEBUG
 					
 					_points_inside_triangle[t] = total
 					_calculated_best_polygon_for_first_triangle[t] = False
+	# print "Triangles precalculated\n\n" # DEBUG
 
 def print_output():
-	print historical_count,enemies_count
-	print historical_points
-	print enemies_points
+	# print historical_count,enemies_count # DEBUG
+	# print historical_points # DEBUG
+	# print enemies_points # DEBUG
 	pass
 
 def best_polygon_for_pivot(p1):
-	print "using %s for pivot"%p1
+	# print "using %s for pivot"%p1 # DEBUG
 
 	best = 0
 	for p2 in historical_points:
@@ -69,33 +75,42 @@ def best_polygon_for_pivot(p1):
 			if p1<p2 and p2<p3:
 				t = Triangle(p1,p2,p3)
 				b = best_polygon_for_first_triangle(t)
-				print "%s is the best polygon for first triangle %s"%(b,t)
 				best = b if b > best else best
 	return best
 
 def check_internal_angle(p1,p2,p3):
 	u = Vector(p1-p2)
 	v = Vector(p3-p2)
-	return (u*v > 0)
+	return (u*v < 0)
 
 def best_polygon_for_first_triangle(t):
+	# print "checking best polygon for first triangle %s"%t # DEBUG
+
 	if _calculated_best_polygon_for_first_triangle[t]:
+		# print "\treturning calculated result" # DEBUG
 		return _best_polygon_for_first_triangle[t]
-	if _points_inside_triangle == -1:
+	if _points_inside_triangle[t] == -1:
+		# print "\tthere are enemies points" # DEBUG
 		_best_polygon_for_first_triangle[t] = -1
 		_calculated_best_polygon_for_first_triangle[t] = True
 		return _best_polygon_for_first_triangle[t]
 	
+	# print "\tcalculating best polygon" # DEBUG
 	p1,p2,p3 = t.p1,t.p2,t.p3
-	best_recursive = 0
+	best_recursive = 3
 	for recursive_p in historical_points:
+		# print "\tchecking usability recursive point %s"%recursive_p # DEBUG
 		if recursive_p > p3:
+			# print "\tchecking angle for recursive point" # DEBUG
 			if check_internal_angle(p1,p2,recursive_p) and check_internal_angle(p1,p3,recursive_p):
+				# print "\t\tusing recursive point" # DEBUG
 				recursive_t = Triangle(p2,p3,recursive_p)
 				best_recursive = max(best_polygon_for_first_triangle(recursive_t)+1, best_recursive)
+				# print "\t\tbest recursive is: %s"%best_recursive # DEBUG
 
-	_best_polygon_for_first_triangle[t] = best_recursive + 3
+	_best_polygon_for_first_triangle[t] = best_recursive
 	_calculated_best_polygon_for_first_triangle[t] = True
+	# print "\t%s is the best polygon for first triangle %s"%(_best_polygon_for_first_triangle[t],t) # DEBUG
 	return _best_polygon_for_first_triangle[t]
 
 class Point:
@@ -180,12 +195,12 @@ class Triangle:
 def main():
 	parse_input()
 	precalculate_triangles()
-	best_polygon = 2 # the minimum best polygon is a triangle with two points inside
+	best_polygon = min(2,len(historical_points)) # the minimum best polygon is a triangle with two points inside
 	for pivot in historical_points:
 		actual_polygon = best_polygon_for_pivot(pivot)
 		best_polygon = actual_polygon if (actual_polygon>best_polygon) else best_polygon
 	print best_polygon
-	#print_output()
+	# print_output() # DEBUG
 
 if __name__ == '__main__':
 	main()
