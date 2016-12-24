@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#UTILITY
 def conseguirInput():
 	global N
 	global permutaciones,vistas
@@ -7,10 +8,7 @@ def conseguirInput():
 	permutaciones = (map(lambda x: int(x) - 1, raw_input().split(" ")))
 	vistas = [False for x in permutaciones]
 
-
-def isOdd(number):
-	return (number%2)
-
+#MAIN
 def calcularCiclos():
 	global permutaciones, vistas, ciclos
 	ciclos = []
@@ -26,17 +24,36 @@ def calcularCiclos():
 
 def calcularTorneosPosibles():
 	global ciclos
-	nciclos = len(ciclos)
-	aristasGrafoCiclos = (nciclos * (nciclos - 1))/2
-	valor = pow(2,aristasGrafoCiclos)
+	valor = 1
+
+	#iteraciones dentro de un ciclo
 	for x in ciclos:
 		valor *= pow(2,x/2) * isOdd(x)
+
+	#iteraciones entre dos ciclos
+	for x in range(0, len(ciclos) -1):
+		for y in range(x+1, len(ciclos)):
+			valor *= pow(2, MCD(ciclos[x],ciclos[y]))
+
 	return valor
 
+
 def calcularTorneosPosiblesConModulo():
-	LIMITE_MODULAR = pow(10,9) + 7 
+	LIMITE_MODULAR = pow(10,9) + 7
 	return calcularTorneosPosibles() % LIMITE_MODULAR
 
+#MATH
+def MCD(a,b):
+	if a==0:
+		return b
+	else:
+		return MCD(b%a, a)
+
+def isOdd(number):
+	return (number%2)
+
+
+# RUN!
 conseguirInput()
 calcularCiclos()
 print calcularTorneosPosiblesConModulo()
