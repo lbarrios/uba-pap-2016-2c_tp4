@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
-
 # Global variables
 historical_count = 0
 enemies_count = 0
@@ -10,13 +8,11 @@ historical_points = []
 enemies_points = []
 
 _points_inside_triangle = dict()
-
 _calculated_best_polygon_for_first_triangle = dict()
 _best_polygon_for_first_triangle = dict()
 
 def parse_input():
-	"""
-	Parses the input
+	""" parses the input
 	"""
 	global historical_count,enemies_count,historical_points,enemies_points
 	historical_count,enemies_count = map(int,raw_input().split())
@@ -30,7 +26,9 @@ def parse_input():
 	enemies_points.sort()
 
 def precalculate_triangles():
-	# print "Precalculating triangles..." # DEBUG
+	""" precalculate the historical points
+	inside every possible (valid) triangle
+	"""
 	global _calculated_best_polygon_for_first_triangle, _points_inside_triangle
 	for p1 in historical_points:
 		for p2 in historical_points:
@@ -38,37 +36,27 @@ def precalculate_triangles():
 				# check if the triangle is valid
 				if p1<p2 and p2<p3:
 					t = Triangle(p1,p2,p3)
-					# print "checking triangle %s"%t # DEBUG
 					total = 0
 
 					# if triangle cointains an enemy, it is not valid
 					for p in enemies_points:
 						if p in t:
 							total = -1
-							# print "\t triangle has enemies points" # DEBUG
 					
 					# if triangle does not contains an enemy, calculates the historical points count
 					if total != -1:
-						# print "\t checking historical points" # DEBUG
 						for p in historical_points:
 							if p != p1 and p != p2 and p != p3:
 								if p in t:
 									total += 1
-						# print "\t historical points = %s"%total # DEBUG
 					
 					_points_inside_triangle[t] = total
 					_calculated_best_polygon_for_first_triangle[t] = False
-	# print "Triangles precalculated\n\n" # DEBUG
-
-def print_output():
-	# print historical_count,enemies_count # DEBUG
-	# print historical_points # DEBUG
-	# print enemies_points # DEBUG
-	pass
 
 def best_polygon_for_pivot(p1):
-	# print "using %s for pivot"%p1 # DEBUG
-
+	""" returns the best polygon
+	given a pivot "p1"
+	"""
 	best = 0
 	for p2 in historical_points:
 		for p3 in historical_points:
@@ -79,42 +67,41 @@ def best_polygon_for_pivot(p1):
 	return best
 
 def check_internal_angle(p1,p2,p3):
+	""" checks if internal angle
+	is valid (< 180°)
+	"""
 	u = Vector(p1-p2)
 	v = Vector(p3-p2)
 	return (u*v < 0)
 
 def best_polygon_for_first_triangle(t):
-	# print "checking best polygon for first triangle %s"%t # DEBUG
-
+	""" returns the best polygon 
+	given a first triangle "t"
+	"""
 	if _calculated_best_polygon_for_first_triangle[t]:
-		# print "\treturning calculated result" # DEBUG
 		return _best_polygon_for_first_triangle[t]
+
 	if _points_inside_triangle[t] == -1:
-		# print "\tthere are enemies points" # DEBUG
 		_best_polygon_for_first_triangle[t] = -1
 		_calculated_best_polygon_for_first_triangle[t] = True
 		return _best_polygon_for_first_triangle[t]
 	
-	# print "\tcalculating best polygon" # DEBUG
 	p1,p2,p3 = t.p1,t.p2,t.p3
 	best_recursive = 3
 	for recursive_p in historical_points:
-		# print "\tchecking usability recursive point %s"%recursive_p # DEBUG
 		if recursive_p > p3:
-			# print "\tchecking angle for recursive point" # DEBUG
 			if check_internal_angle(p1,p2,recursive_p) and check_internal_angle(p1,p3,recursive_p):
-				# print "\t\tusing recursive point" # DEBUG
 				recursive_t = Triangle(p2,p3,recursive_p)
 				best_recursive = max(best_polygon_for_first_triangle(recursive_t)+1, best_recursive)
-				# print "\t\tbest recursive is: %s"%best_recursive # DEBUG
 
 	_best_polygon_for_first_triangle[t] = best_recursive + _points_inside_triangle[t]
 	_calculated_best_polygon_for_first_triangle[t] = True
-	# print "\t%s is the best polygon for first triangle %s"%(_best_polygon_for_first_triangle[t],t) # DEBUG
 	return _best_polygon_for_first_triangle[t]
 
 class Point:
-	""" Point class represents and manipulates x,y coords. """
+	"""
+	Point class represents and manipulates x,y coords.
+	"""
 
 	def __init__(self,x,y):
 		""" Create a new point at the origin """
@@ -153,7 +140,9 @@ class Vector:
 		(self.x*v2.y) - (v2.x*self.y)
 
 class Triangle:
-	""" Triangle class represents and manipulates 3 points figure. """
+	"""
+	Triangle class represents and manipulates 3 points figure.
+	"""
 
 	#def __hash__(self):
 	#	return hash("({0},{1},{2})".format(self.p1, self.p2, self.p3))
@@ -200,7 +189,6 @@ def main():
 		actual_polygon = best_polygon_for_pivot(pivot)
 		best_polygon = actual_polygon if (actual_polygon>best_polygon) else best_polygon
 	print best_polygon
-	# print_output() # DEBUG
 
 if __name__ == '__main__':
 	main()
