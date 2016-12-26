@@ -108,7 +108,7 @@ def best_polygon_for_first_triangle(t):
 				best_recursive = max(best_polygon_for_first_triangle(recursive_t)+1, best_recursive)
 				# print "\t\tbest recursive is: %s"%best_recursive # DEBUG
 
-	_best_polygon_for_first_triangle[t] = best_recursive
+	_best_polygon_for_first_triangle[t] = best_recursive + _points_inside_triangle[t]
 	_calculated_best_polygon_for_first_triangle[t] = True
 	# print "\t%s is the best polygon for first triangle %s"%(_best_polygon_for_first_triangle[t],t) # DEBUG
 	return _best_polygon_for_first_triangle[t]
