@@ -143,10 +143,7 @@ class Triangle:
 	"""
 	Triangle class represents and manipulates 3 points figure.
 	"""
-
-	#def __hash__(self):
-	#	return hash("({0},{1},{2})".format(self.p1, self.p2, self.p3))
-
+	
 	def __init__(self,p1,p2,p3):
 		""" Create a new triangle instance """
 		points = [p1,p2,p3]
